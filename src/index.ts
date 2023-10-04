@@ -40,10 +40,10 @@ const renderGrid = (
   context: GPUCanvasContext,
   cellPipeline: GPURenderPipeline,
   vertexBuffer: GPUBuffer,
-  vertexLength: number,
+  vertexCount: number,
   bindGroups: GPUBindGroup[]
 ) => {
-  const pass = encoder.beginRenderPass({
+  const renderPass = encoder.beginRenderPass({
     colorAttachments: [
       {
         view: context.getCurrentTexture().createView(),
@@ -55,13 +55,13 @@ const renderGrid = (
   });
 
   // Draw the grid.
-  pass.setPipeline(cellPipeline);
-  pass.setBindGroup(0, bindGroups[step % 2]);
-  pass.setVertexBuffer(0, vertexBuffer);
-  pass.draw(vertexLength / 2, GRID_SIZE * GRID_SIZE);
+  renderPass.setPipeline(cellPipeline);
+  renderPass.setBindGroup(0, bindGroups[step % 2]);
+  renderPass.setVertexBuffer(0, vertexBuffer);
+  renderPass.draw(vertexCount, GRID_SIZE * GRID_SIZE);
 
   // End the render pass and submit the command buffer
-  pass.end();
+  renderPass.end();
 };
 
 const main = async () => {
@@ -139,7 +139,7 @@ const main = async () => {
         context,
         cellPipeline,
         vertexBuffer,
-        SQUARE_VERTICES.length,
+        SQUARE_VERTICES.length / 2, // 6 vertices from 2D points
         bindGroups
       );
 
