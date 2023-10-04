@@ -77,15 +77,14 @@ const main = async () => {
 
   const context = canvas?.getContext("webgpu");
 
+  const cellShaderModule = getCellShaderModule(device);
+  const simulationShaderModule = getComputeShaderModule(device);
   // uniform buffer is for the grid layout
   const uniformBuffer = getUniformBuffer(device);
   // vertext buffer is only for drawing/rendering
   const vertexBuffer = getVertexBuffer(device);
   // cell state storage buffers (ping-pong, so two) for rendering and compute
   const cellStateStorage = getCellStateStorage(device);
-
-  const cellShaderModule = getCellShaderModule(device);
-  const simulationShaderModule = getComputeShaderModule(device);
 
   const vertexBufferLayout: GPUVertexBufferLayout = {
     arrayStride: 8,
