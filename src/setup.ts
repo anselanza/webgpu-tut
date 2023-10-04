@@ -1,32 +1,19 @@
-import { GRID_SIZE, WORKGROUP_SIZE } from "./defaults";
+import { GRID_SIZE, SQUARE_VERTICES, WORKGROUP_SIZE } from "./defaults";
 
 export const getVertexBuffer = (device: GPUDevice): GPUBuffer => {
-  // Vertices for square
-  const vertices = new Float32Array([
-    -0.8,
-    -0.8, // Triangle 1
-    0.8,
-    -0.8,
-    0.8,
-    0.8,
-
-    -0.8,
-    -0.8, // Triangle 2
-    0.8,
-    0.8,
-    -0.8,
-    0.8,
-  ]);
-
-  console.log("vertices length:", vertices.byteLength, vertices.length);
+  console.log(
+    "vertices length:",
+    SQUARE_VERTICES.byteLength,
+    SQUARE_VERTICES.length
+  );
 
   const vertexBuffer = device.createBuffer({
     label: "Cell vertices",
-    size: vertices.byteLength,
+    size: SQUARE_VERTICES.byteLength,
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
   });
 
-  device.queue.writeBuffer(vertexBuffer, /*bufferOffset=*/ 0, vertices);
+  device.queue.writeBuffer(vertexBuffer, /*bufferOffset=*/ 0, SQUARE_VERTICES);
 
   return vertexBuffer;
 };

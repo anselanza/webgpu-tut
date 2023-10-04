@@ -1,4 +1,9 @@
-import { GRID_SIZE, UPDATE_INTERVAL, WORKGROUP_SIZE } from "./defaults";
+import {
+  GRID_SIZE,
+  SQUARE_VERTICES,
+  UPDATE_INTERVAL,
+  WORKGROUP_SIZE,
+} from "./defaults";
 import {
   getUniformBuffer,
   getVertexBuffer,
@@ -75,13 +80,14 @@ const main = async () => {
 
   const context = canvas?.getContext("webgpu");
 
+  // uniform buffer is for the grid layout
   const uniformBuffer = getUniformBuffer(device);
+  // vertext buffer is only for drawing/rendering
   const vertexBuffer = getVertexBuffer(device);
+  // cell state storage buffers (ping-pong, so two) for rendering and compute
   const cellStateStorage = getCellStateStorage(device);
 
   const cellShaderModule = getCellShaderModule(device);
-
-  // Create the compute shader that will process the simulation.
   const simulationShaderModule = getComputeShaderModule(device);
 
   const vertexBufferLayout: GPUVertexBufferLayout = {
@@ -98,7 +104,6 @@ const main = async () => {
   // Create the bind group layout and pipeline layout.
   const bindGroupLayout = getBindGroupLayout(device);
 
-  // Bind group needs uniform buffer AND render pipeline
   const bindGroups = getBindGroups(
     device,
     bindGroupLayout,
@@ -135,7 +140,7 @@ const main = async () => {
         bindGroups,
         cellPipeline,
         vertexBuffer,
-        12 // there must be a better way to store/calc this?
+        SQUARE_VERTICES.length
       );
     }, UPDATE_INTERVAL);
   }
