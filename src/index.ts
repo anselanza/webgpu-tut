@@ -18,18 +18,11 @@ import {
 export {}; // allows top-level await; is this the only way?
 
 const updateGrid = (
-  stepIn: number,
-  device: GPUDevice,
-  context: GPUCanvasContext,
+  step: number,
+  encoder: GPUCommandEncoder,
   simulationPipeline: GPUComputePipeline,
-  bindGroups: GPUBindGroup[],
-  cellPipeline: GPURenderPipeline,
-  vertexBuffer: GPUBuffer,
-  vertexLength: number
-): number => {
-  let step = stepIn;
-
-  const encoder = device.createCommandEncoder();
+  bindGroups: GPUBindGroup[]
+) => {
   const computePass = encoder.beginComputePass();
 
   computePass.setPipeline(simulationPipeline);
@@ -39,10 +32,17 @@ const updateGrid = (
   computePass.dispatchWorkgroups(workgroupCount, workgroupCount);
 
   computePass.end();
+};
 
-  step++; // Increment the step count
-
-  // Start a render pass
+const renderGrid = (
+  step: number,
+  encoder: GPUCommandEncoder,
+  context: GPUCanvasContext,
+  cellPipeline: GPURenderPipeline,
+  vertexBuffer: GPUBuffer,
+  vertexLength: number,
+  bindGroups: GPUBindGroup[]
+) => {
   const pass = encoder.beginRenderPass({
     colorAttachments: [
       {
@@ -62,9 +62,6 @@ const updateGrid = (
 
   // End the render pass and submit the command buffer
   pass.end();
-  device.queue.submit([encoder.finish()]);
-
-  return step;
 };
 
 const main = async () => {
@@ -132,16 +129,21 @@ const main = async () => {
 
     // Schedule updateGrid() to run repeatedly
     setInterval(() => {
-      step = updateGrid(
+      const encoder = device.createCommandEncoder();
+
+      updateGrid(step, encoder, simulationPipeline, bindGroups);
+      step++; // Increment the step count
+      renderGrid(
         step,
-        device,
+        encoder,
         context,
-        simulationPipeline,
-        bindGroups,
         cellPipeline,
         vertexBuffer,
-        SQUARE_VERTICES.length
+        SQUARE_VERTICES.length,
+        bindGroups
       );
+
+      device.queue.submit([encoder.finish()]);
     }, UPDATE_INTERVAL);
   }
 };
