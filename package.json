@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/dom-webcodecs": "^0.1.8",
+    "@webgpu/types": "^0.1.37",
     "vite": "^4.4.5"
   }
 }
