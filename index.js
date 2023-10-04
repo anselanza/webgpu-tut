@@ -1,7 +1,7 @@
-const GRID_SIZE = 32;
+const GRID_SIZE = 128;
 const WORKGROUP_SIZE = 8;
 
-const UPDATE_INTERVAL = 200; // Update every 200ms (5 times/sec)
+const UPDATE_INTERVAL = 16; // Update every 200ms (5 times/sec)
 let step = 0; // Track how many simulation steps have been run
 
 if (!navigator.gpu) {
@@ -149,12 +149,30 @@ const simulationShaderModule = device.createShaderModule({
     @workgroup_size(${WORKGROUP_SIZE}, ${WORKGROUP_SIZE})
 
     fn computeMain(@builtin(global_invocation_id) cell: vec3u) {
-      // Test: flip cell state every step
-      if (cellStateIn[cellIndex(cell.xy)] == 1) {
-        cellStateOut[cellIndex(cell.xy)] = 0;
-      } else {
-        cellStateOut[cellIndex(cell.xy)] = 1;
-      }
+       // Determine how many active neighbors this cell has.
+      let activeNeighbors = cellActive(cell.x+1, cell.y+1) +
+        cellActive(cell.x+1, cell.y) +
+        cellActive(cell.x+1, cell.y-1) +
+        cellActive(cell.x, cell.y-1) +
+        cellActive(cell.x-1, cell.y-1) +
+        cellActive(cell.x-1, cell.y) +
+        cellActive(cell.x-1, cell.y+1) +
+        cellActive(cell.x, cell.y+1);    
+
+        let i = cellIndex(cell.xy);
+
+        // Conway's game of life rules:
+        switch activeNeighbors {
+          case 2: { // Active cells with 2 neighbors stay active.
+            cellStateOut[i] = cellStateIn[i];
+          }
+          case 3: { // Cells with 3 neighbors become or stay active.
+            cellStateOut[i] = 1;
+          }
+          default: { // Cells with < 2 or > 3 neighbors become inactive.
+            cellStateOut[i] = 0;
+          }
+        }  
     }
 
     fn cellIndex(cell: vec2u) -> u32 {
